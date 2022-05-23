@@ -1,0 +1,20 @@
+defaults:
+  - _self_
+  - dataset: default
+  - model: default
+  - train: default
+  - preprocessing: default
+
+output_path: outputs/seq2seq_bidirectional/
+tensorboard_logdir: ${output_path}/tensorboard_logdir
+
+hydra:
+    run:
+      dir: ${output_path}
+    job_logging:
+      handlers:
+        file:
+          mode: 'w'
+
+log_dir: ${output_path}
+debug: true

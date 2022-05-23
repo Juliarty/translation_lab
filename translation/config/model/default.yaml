@@ -1,0 +1,7 @@
+enc_emb_dim: 64
+dec_emb_dim: 64
+enc_hid_dim: 64
+dec_hid_dim: 64
+attn_dim: 16
+enc_dropout: 0.5
+dec_dropout: 0.5

@@ -1,4 +1,5 @@
 import os
+import pickle
 from typing import Union
 import hydra
 import logging
@@ -6,13 +7,14 @@ import logging
 import torch
 from omegaconf import DictConfig
 from torch import nn, optim
+from torch.utils.tensorboard import SummaryWriter
 
 from src.data.dataset import get_preprocessing, get_dataloaders, split_data, load_data
 from src.models.seq2seq import Encoder, Attention, Decoder, Seq2Seq
 from src.params.dataset_params import DatasetParams
 from src.params.main_params import MainParams, get_main_params
 
-from src.models.utils import count_parameters, init_weights
+from src.models.utils import count_parameters, get_fasttext_pretrained_embedding
 from src.params.model_params import ModelParams
 from src.train import train, evaluate_blue
 
@@ -24,17 +26,25 @@ def prepare_seq2seq_model(
     dataset_params: DatasetParams,
     model_params: ModelParams,
     device: torch.device,
+    encoder_bidirectional: bool = False,
 ) -> nn.Module:
     encoder_input_dim = len(preprocessing.lang2vocabs[dataset_params.source_language])
     decoder_input_dim = len(preprocessing.lang2vocabs[dataset_params.target_language])
     device = "cuda"
+    encoder_embedding = None
+
+    if model_params.pretrained_embedding == 'fasttext':
+        encoder_embedding = get_fasttext_pretrained_embedding(dataset_params.source_language, preprocessing.lang2vocabs[dataset_params.source_language], model_params.enc_emb_dim)
+
     enc = Encoder(
-        encoder_input_dim,
-        model_params.enc_emb_dim,
-        model_params.enc_hid_dim,
-        model_params.dec_hid_dim,
-        model_params.enc_dropout,
-        device,
+        input_dim=encoder_input_dim,
+        emb_dim=model_params.enc_emb_dim,
+        enc_hid_dim=model_params.enc_hid_dim,
+        dec_hid_dim=model_params.dec_hid_dim,
+        dropout=model_params.enc_dropout,
+        device=device,
+        bidirectional=encoder_bidirectional,
+        pretrained_embedding=encoder_embedding
     )
 
     attn = Attention(
@@ -42,8 +52,13 @@ def prepare_seq2seq_model(
         model_params.dec_hid_dim,
         model_params.attn_dim,
         device,
+        encoder_bidirectional=encoder_bidirectional,
     )
 
+    decoder_embedding = None
+    if model_params.pretrained_embedding == 'fasttext':
+        decoder_embedding = get_fasttext_pretrained_embedding(dataset_params.target_language, preprocessing.lang2vocabs[dataset_params.target_language],
+                                                              model_params.dec_emb_dim)
     dec = Decoder(
         decoder_input_dim,
         model_params.dec_emb_dim,
@@ -52,16 +67,12 @@ def prepare_seq2seq_model(
         model_params.dec_dropout,
         attn,
         device,
+        pretrained_embedding=decoder_embedding
     )
 
     model = Seq2Seq(enc, dec, device).to(device)
 
-    model.apply(init_weights)
-
     return model
-
-
-from torch.utils.tensorboard import SummaryWriter
 
 
 @hydra.main(version_base="1.1", config_path="config", config_name="main.yaml")
@@ -77,7 +88,15 @@ def start_training_pipeline(cfg: Union[DictConfig, MainParams]) -> None:
     )
     split_data(main_params.dataset)
 
-    preprocessing = get_preprocessing(main_params.dataset, main_params.preprocessing)
+    preprocessing_path = "preprocessing.pkl"
+    if not os.path.exists(preprocessing_path):
+        with open(preprocessing_path, 'wb') as f:
+            preprocessing = get_preprocessing(main_params.dataset, main_params.preprocessing)
+            pickle.dump(preprocessing, f)
+    else:
+        with open("preprocessing.pkl", 'rb') as f:
+            preprocessing = pickle.load(f)
+
     train_dl, val_dl, test_dl = get_dataloaders(
         main_params.dataset, preprocessing, main_params.train.batch_size
     )
@@ -103,10 +122,11 @@ def start_training_pipeline(cfg: Union[DictConfig, MainParams]) -> None:
         criterion=criterion,
         optimizer=optimizer,
         n_epochs=main_params.train.n_epoch,
-        clip=10,
+        clip=1,
         device=main_params.train.device,
         summary_writer=writer,
-        debug=main_params.debug
+        debug=main_params.debug,
+        tmp_model_save_path=os.path.join(main_params.output_path, "tmp_model.pt"),
     )
 
     score = evaluate_blue(
@@ -116,7 +136,7 @@ def start_training_pipeline(cfg: Union[DictConfig, MainParams]) -> None:
         test_iterator=test_dl,
         device=main_params.train.device,
         summary_writer=writer,
-        debug=main_params.debug
+        debug=main_params.debug,
     )
 
     logger.info(f"BLEU: {score}")

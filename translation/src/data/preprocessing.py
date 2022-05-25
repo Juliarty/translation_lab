@@ -1,12 +1,17 @@
 from typing import List, Tuple
 
 import torch.utils.data
+import logging
+
 from torch import Tensor
 from torchtext.data.utils import get_tokenizer
 from torchtext.vocab import build_vocab_from_iterator, Vocab
 
 from src.params.dataset_params import DatasetParams
 from src.params.preprocessing_params import PreprocessingParams
+
+
+logger = logging.getLogger(__name__)
 
 
 def yield_tokens(data_iter, tokenizer, index):
@@ -22,10 +27,17 @@ class Preprocessing:
 
     SPECIAL_TOKENS = [UNKNOWN_TOKEN, PADDING_TOKEN, BEGINNING_TOKEN, END_TOKEN]
 
-    def __init__(self, data_iter, dataset_params: DatasetParams, preprocessing_params: PreprocessingParams):
+    def __init__(
+        self,
+        data_iter,
+        dataset_params: DatasetParams,
+        preprocessing_params: PreprocessingParams,
+    ):
         self.dataset_params: DatasetParams = dataset_params
         self.lang2tokenizer = {
-            language: get_tokenizer("spacy", language=preprocessing_params.spacy_tokenizer[language])
+            language: get_tokenizer(
+                "spacy", language=preprocessing_params.spacy_tokenizer[language]
+            )
             for language in [
                 dataset_params.source_language,
                 dataset_params.target_language,
@@ -42,7 +54,7 @@ class Preprocessing:
         )
 
         vocab.set_default_index(vocab[self.UNKNOWN_TOKEN])
-
+        logger.info(f"Get vocab for {language}: {len(vocab)}")
         return vocab
 
     def _get_lang2vocabs(self, data_iter) -> dict:

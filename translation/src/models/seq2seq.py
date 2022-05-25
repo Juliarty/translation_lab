@@ -6,6 +6,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
 
+import gensim.models
+
 
 class Encoder(nn.Module):
     def __init__(
@@ -15,21 +17,33 @@ class Encoder(nn.Module):
         enc_hid_dim: int,
         dec_hid_dim: int,
         dropout: float,
+        bidirectional: bool,
         device: torch.device,
+        pretrained_embedding: nn.Module = None,
     ):
         super().__init__()
 
         self.input_dim = input_dim
         self.emb_dim = emb_dim
         self.enc_hid_dim = enc_hid_dim
+
+        if bidirectional:
+            self.enc_hid_dim *= 2
+
         self.dec_hid_dim = dec_hid_dim
+        self.bidirectional = bidirectional
         self.dropout = dropout
 
-        self.embedding = nn.Embedding(input_dim, emb_dim, device=device)
+        if pretrained_embedding is None:
+            self.embedding = nn.Embedding(input_dim, emb_dim, device=device)
+        else:
+            self.embedding = pretrained_embedding
 
-        self.rnn = nn.GRU(emb_dim, enc_hid_dim, bidirectional=True, device=device)
+        self.rnn = nn.GRU(
+            emb_dim, enc_hid_dim, bidirectional=bidirectional, device=device
+        )
 
-        self.fc = nn.Linear(enc_hid_dim * 2, dec_hid_dim, device=device)
+        self.fc = nn.Linear(enc_hid_dim, dec_hid_dim, device=device)
 
         self.dropout = nn.Dropout(dropout)
 
@@ -39,23 +53,33 @@ class Encoder(nn.Module):
 
         outputs, hidden = self.rnn(embedded)
 
-        hidden = torch.tanh(
-            self.fc(torch.cat((hidden[-2, :, :], hidden[-1, :, :]), dim=1))
-        )
-
-        return outputs, hidden
+        if self.bidirectional:
+            hidden = torch.tanh(
+                self.fc(torch.cat((hidden[-2, :, :], hidden[-1, :, :]), dim=1))
+            )
+        else:
+            hidden = torch.tanh(self.fc(hidden))
+        return outputs, hidden.squeeze(0)
 
 
 class Attention(nn.Module):
     def __init__(
-        self, enc_hid_dim: int, dec_hid_dim: int, attn_dim: int, device: torch.device
+        self,
+        enc_hid_dim: int,
+        dec_hid_dim: int,
+        attn_dim: int,
+        device: torch.device,
+        encoder_bidirectional: bool,
     ):
         super().__init__()
 
         self.enc_hid_dim = enc_hid_dim
         self.dec_hid_dim = dec_hid_dim
 
-        self.attn_in = (enc_hid_dim * 2) + dec_hid_dim
+        if encoder_bidirectional:
+            self.attn_in = (enc_hid_dim * 2) + dec_hid_dim
+        else:
+            self.attn_in = enc_hid_dim + dec_hid_dim
 
         self.attn = nn.Linear(self.attn_in, attn_dim, device=device)
 
@@ -86,6 +110,7 @@ class Decoder(nn.Module):
         dropout: float,
         attention: nn.Module,
         device: torch.device,
+        pretrained_embedding: nn.Module=None
     ):
         super().__init__()
 
@@ -96,9 +121,13 @@ class Decoder(nn.Module):
         self.dropout = dropout
         self.attention = attention
 
-        self.embedding = nn.Embedding(output_dim, emb_dim, device=device)
+        if pretrained_embedding is None:
+            self.embedding = nn.Embedding(output_dim, emb_dim, device=device)
+        else:
+            self.embedding = pretrained_embedding
 
-        self.rnn = nn.GRU((enc_hid_dim * 2) + emb_dim, dec_hid_dim, device=device)
+
+        self.rnn = nn.GRU(enc_hid_dim + emb_dim, dec_hid_dim, device=device)
 
         self.out = nn.Linear(
             self.attention.attn_in + emb_dim, output_dim, device=device

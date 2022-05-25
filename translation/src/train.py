@@ -26,7 +26,7 @@ def train_epoch(
     device: torch.device,
     epoch: int,
     summary_writer: SummaryWriter,
-    debug: bool
+    debug: bool,
 ):
 
     model.train()
@@ -52,7 +52,7 @@ def train_epoch(
         optimizer.step()
 
         epoch_loss += loss.item()
-        summary_writer.add_scalar("val_loss", loss.item(), epoch * len(train_dl) + i)
+        summary_writer.add_scalar("train_loss", loss.item(), epoch * len(train_dl) + i)
 
         if debug and i > 2:
             break
@@ -67,7 +67,7 @@ def evaluate(
     device: torch.device,
     epoch: int,
     summary_writer: SummaryWriter,
-    debug: bool
+    debug: bool,
 ):
 
     model.eval()
@@ -87,7 +87,7 @@ def evaluate(
             loss = criterion(output, trg)
 
             epoch_loss += loss.item()
-            summary_writer.add_scalar("val_loss", loss.item(), epoch*len(val_dl) + i)
+            summary_writer.add_scalar("val_loss", loss.item(), epoch * len(val_dl) + i)
 
             if debug and i > 2:
                 break
@@ -112,18 +112,34 @@ def train(
     clip: float,
     device: torch.device,
     summary_writer: SummaryWriter,
-    debug: bool
+    debug: bool,
+    tmp_model_save_path: str,
 ) -> nn.Module:
+    best_val_loss = float("inf")
     for epoch in range(n_epochs):
 
         start_time = time.time()
 
         train_loss = train_epoch(
-            model, train_dl, optimizer, criterion, clip, device, epoch, summary_writer, debug
+            model,
+            train_dl,
+            optimizer,
+            criterion,
+            clip,
+            device,
+            epoch,
+            summary_writer,
+            debug,
         )
-        summary_writer.add_scalar("train_loss", train_loss, epoch)
 
-        valid_loss = evaluate(model, valid_iter, criterion, device, epoch, summary_writer, debug)
+        valid_loss = evaluate(
+            model, valid_iter, criterion, device, epoch, summary_writer, debug
+        )
+
+        if valid_loss < best_val_loss:
+            best_val_loss = valid_loss
+            with open(tmp_model_save_path, "wb") as f:
+                torch.save(model, f)
 
         end_time = time.time()
 
@@ -149,7 +165,8 @@ def evaluate_blue(
     dataset_params: DatasetParams,
     device: torch.device,
     summary_writer: SummaryWriter,
-    debug: bool
+    debug: bool,
+    log_translation_count: int = 100
 ) -> float:
     original_text = []
     generated_text = []
@@ -192,8 +209,7 @@ def evaluate_blue(
             if debug and i > 2:
                 break
 
-    for _ in range(20):
-        i = random.choice(range(len(source_text)))
+    for i in range(log_translation_count):
         origin = " ".join(
             [
                 word
@@ -218,7 +234,8 @@ def evaluate_blue(
             [
                 word
                 for word in generated_text[:end_index][i]
-                if word not in preprocessing.SPECIAL_TOKENS or word == preprocessing.UNKNOWN_TOKEN
+                if word not in preprocessing.SPECIAL_TOKENS
+                or word == preprocessing.UNKNOWN_TOKEN
             ]
         )
         summary_writer.add_text(
@@ -228,3 +245,28 @@ def evaluate_blue(
         )
 
     return corpus_bleu([[text] for text in original_text], generated_text) * 100
+
+
+def evaluate_model(
+    model_path: str,
+    preprocessing: Preprocessing,
+    test_dl: torch.utils.data.DataLoader,
+    dataset_params: DatasetParams,
+    device: torch.device,
+    summary_writer: SummaryWriter,
+):
+    with open(model_path, "rb") as f:
+        model = torch.load(f)
+        logger.info(f"Loaded model {model}")
+
+        score = evaluate_blue(
+            model,
+            preprocessing=preprocessing,
+            test_iterator=test_dl,
+            dataset_params=dataset_params,
+            device=device,
+            summary_writer=summary_writer,
+            debug=False,
+        )
+
+        logger.info(f"BLEU score: {score}")

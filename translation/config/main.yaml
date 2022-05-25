@@ -17,4 +17,4 @@ hydra:
           mode: 'w'
 
 log_dir: ${output_path}
-debug: true
+debug: false

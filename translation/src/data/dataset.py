@@ -49,6 +49,7 @@ def load_data(dataset_path: str, dataset_url: str):
 
 def split_data(dataset_params: DatasetParams) -> None:
     df = pd.read_csv(dataset_params.dataset_path, sep="\t")
+    df = df.sample(frac=1)
     train_length = math.floor(dataset_params.train_size * len(df))
     val_length = math.floor(dataset_params.val_size * len(df))
     test_length = len(df) - (train_length + val_length)
@@ -72,13 +73,15 @@ def split_data(dataset_params: DatasetParams) -> None:
     logger.info("Split dataset.")
 
 
-def get_preprocessing(dataset_params: DatasetParams, preprocessing_params: PreprocessingParams):
+def get_preprocessing(
+    dataset_params: DatasetParams, preprocessing_params: PreprocessingParams
+):
     train_ds = TranslationDataset(dataset_path=dataset_params.train_dataset_path)
 
     return Preprocessing(
         data_iter=DataLoader(train_ds, collate_fn=lambda x: x),
         dataset_params=dataset_params,
-        preprocessing_params=preprocessing_params
+        preprocessing_params=preprocessing_params,
     )
 
 
@@ -118,10 +121,7 @@ def get_dataloaders(
 
     def batch_sampler():
         indices = [
-            (
-                i,
-                len(s[dataset_params.target_language_index])
-            )
+            (i, len(s[dataset_params.target_language_index]))
             for i, s in enumerate(DataLoader(train_ds, collate_fn=lambda x: x))
         ]
         random.shuffle(indices)
@@ -143,7 +143,7 @@ def get_dataloaders(
             train_ds,
             batch_size=batch_size,
             collate_fn=collate_fn,
-            #batch_sampler=batch_sampler()
+            # batch_sampler=batch_sampler()
         ),
         DataLoader(val_ds, batch_size=batch_size, shuffle=True, collate_fn=collate_fn),
         DataLoader(test_ds, batch_size=batch_size, shuffle=True, collate_fn=collate_fn),

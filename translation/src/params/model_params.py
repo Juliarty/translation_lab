@@ -10,3 +10,4 @@ class ModelParams:
     attn_dim: int
     enc_dropout: float
     dec_dropout: float
+    pretrained_embedding: str

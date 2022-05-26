@@ -26,25 +26,25 @@ def prepare_seq2seq_model(
     dataset_params: DatasetParams,
     model_params: ModelParams,
     device: torch.device,
-    encoder_bidirectional: bool = False,
 ) -> nn.Module:
     encoder_input_dim = len(preprocessing.lang2vocabs[dataset_params.source_language])
     decoder_input_dim = len(preprocessing.lang2vocabs[dataset_params.target_language])
-    device = "cuda"
     encoder_embedding = None
 
     if model_params.pretrained_embedding == 'fasttext':
         encoder_embedding = get_fasttext_pretrained_embedding(dataset_params.source_language, preprocessing.lang2vocabs[dataset_params.source_language], model_params.enc_emb_dim)
 
     enc = Encoder(
+        rnn_type=model_params.rnn_type,
+        bidirectional=model_params.bidirectional,
         input_dim=encoder_input_dim,
         emb_dim=model_params.enc_emb_dim,
         enc_hid_dim=model_params.enc_hid_dim,
         dec_hid_dim=model_params.dec_hid_dim,
         dropout=model_params.enc_dropout,
         device=device,
-        bidirectional=encoder_bidirectional,
         pretrained_embedding=encoder_embedding
+
     )
 
     attn = Attention(
@@ -52,7 +52,7 @@ def prepare_seq2seq_model(
         model_params.dec_hid_dim,
         model_params.attn_dim,
         device,
-        encoder_bidirectional=encoder_bidirectional,
+        encoder_bidirectional=model_params.bidirectional,
     )
 
     decoder_embedding = None
@@ -60,6 +60,8 @@ def prepare_seq2seq_model(
         decoder_embedding = get_fasttext_pretrained_embedding(dataset_params.target_language, preprocessing.lang2vocabs[dataset_params.target_language],
                                                               model_params.dec_emb_dim)
     dec = Decoder(
+        model_params.rnn_type,
+        model_params.bidirectional,
         decoder_input_dim,
         model_params.dec_emb_dim,
         model_params.enc_hid_dim,

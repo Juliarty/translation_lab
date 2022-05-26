@@ -30,7 +30,9 @@ model:
   attn_dim: 128
   enc_dropout: 0.5
   dec_dropout: 0.5
-  pretrained_embedding: fasttext
+  pretrained_embedding: none
+  rnn_type: gru
+  bidirectional: false
 train:
   batch_size: 16
   n_epoch: 40

@@ -1,57 +1,62 @@
 import random
-from typing import Tuple
+from typing import Tuple, Any
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
 
-import gensim.models
-
 
 class Encoder(nn.Module):
     def __init__(
         self,
+        rnn_type: str,
+        bidirectional: bool,
         input_dim: int,
         emb_dim: int,
         enc_hid_dim: int,
         dec_hid_dim: int,
         dropout: float,
-        bidirectional: bool,
         device: torch.device,
         pretrained_embedding: nn.Module = None,
     ):
         super().__init__()
-
+        self.rnn_type = rnn_type
         self.input_dim = input_dim
         self.emb_dim = emb_dim
         self.enc_hid_dim = enc_hid_dim
 
-        if bidirectional:
-            self.enc_hid_dim *= 2
-
         self.dec_hid_dim = dec_hid_dim
         self.bidirectional = bidirectional
         self.dropout = dropout
-
+        self.num_layers = 1
         if pretrained_embedding is None:
             self.embedding = nn.Embedding(input_dim, emb_dim, device=device)
         else:
             self.embedding = pretrained_embedding
 
-        self.rnn = nn.GRU(
-            emb_dim, enc_hid_dim, bidirectional=bidirectional, device=device
-        )
+        if rnn_type == 'gru':
+            self.rnn = nn.GRU(emb_dim, enc_hid_dim, bidirectional=bidirectional, num_layers=self.num_layers, device=device)
+        elif rnn_type == 'lstm':
+            self.rnn = nn.LSTM(emb_dim, enc_hid_dim, bidirectional=bidirectional, num_layers=self.num_layers, device=device)
 
-        self.fc = nn.Linear(enc_hid_dim, dec_hid_dim, device=device)
+        if bidirectional:
+            self.fc = nn.Linear(enc_hid_dim * 2, dec_hid_dim, device=device)
+        else:
+            self.fc = nn.Linear(enc_hid_dim, dec_hid_dim, device=device)
 
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, src: Tensor) -> Tuple[Tensor, Tensor]:
+    def forward(self, src: Tensor) -> Tuple[Any, Tuple[Any, Any]]:
 
         embedded = self.dropout(self.embedding(src))
 
-        outputs, hidden = self.rnn(embedded)
+        if self.rnn_type == 'gru':
+            outputs, hidden = self.rnn(embedded)
+        elif self.rnn_type == 'lstm':
+            outputs, (hidden, context) = self.rnn(embedded)
+        else:
+            raise Exception()
 
         if self.bidirectional:
             hidden = torch.tanh(
@@ -59,7 +64,11 @@ class Encoder(nn.Module):
             )
         else:
             hidden = torch.tanh(self.fc(hidden))
-        return outputs, hidden.squeeze(0)
+
+        if self.rnn_type == 'gru':
+            return outputs, hidden.squeeze(0)
+        elif self.rnn_type == 'lstm':
+            return outputs, hidden.squeeze(0)
 
 
 class Attention(nn.Module):
@@ -103,6 +112,8 @@ class Attention(nn.Module):
 class Decoder(nn.Module):
     def __init__(
         self,
+        rnn_type: str,
+        bidirectional_encoder: bool,
         output_dim: int,
         emb_dim: int,
         enc_hid_dim: int,
@@ -113,9 +124,12 @@ class Decoder(nn.Module):
         pretrained_embedding: nn.Module=None
     ):
         super().__init__()
-
+        self.rnn_type = rnn_type
         self.emb_dim = emb_dim
         self.enc_hid_dim = enc_hid_dim
+        if bidirectional_encoder:
+            self.enc_hid_dim *= 2
+
         self.dec_hid_dim = dec_hid_dim
         self.output_dim = output_dim
         self.dropout = dropout
@@ -126,11 +140,13 @@ class Decoder(nn.Module):
         else:
             self.embedding = pretrained_embedding
 
-
-        self.rnn = nn.GRU(enc_hid_dim + emb_dim, dec_hid_dim, device=device)
+        if rnn_type == 'gru':
+            self.rnn = nn.GRU(self.enc_hid_dim + self.emb_dim , self.dec_hid_dim, device=device)
+        elif rnn_type == 'lstm':
+            self.rnn = nn.LSTM(self.enc_hid_dim + self.emb_dim , self.dec_hid_dim, device=device)
 
         self.out = nn.Linear(
-            self.attention.attn_in + emb_dim, output_dim, device=device
+            self.attention.attn_in + self.emb_dim, self.output_dim, device=device
         )
 
         self.dropout = nn.Dropout(dropout)
@@ -153,19 +169,31 @@ class Decoder(nn.Module):
 
     def forward(
         self, input: Tensor, decoder_hidden: Tensor, encoder_outputs: Tensor
-    ) -> Tuple[Tensor, Tensor]:
+    ) -> Tuple[Any, Tuple[Any, Any]]:
 
         input = input.unsqueeze(0)
-
         embedded = self.dropout(self.embedding(input))
 
-        weighted_encoder_rep = self._weighted_encoder_rep(
-            decoder_hidden, encoder_outputs
-        )
+        if self.rnn_type == 'gru':
+            weighted_encoder_rep = self._weighted_encoder_rep(
+                decoder_hidden, encoder_outputs
+            )
 
-        rnn_input = torch.cat((embedded, weighted_encoder_rep), dim=2)
+            rnn_input = torch.cat((embedded, weighted_encoder_rep), dim=2)
+            output, decoder_hidden = self.rnn(rnn_input, decoder_hidden.unsqueeze(0))
 
-        output, decoder_hidden = self.rnn(rnn_input, decoder_hidden.unsqueeze(0))
+        elif self.rnn_type == 'lstm':
+            if not isinstance(decoder_hidden, Tuple):
+                decoder_hidden = (decoder_hidden, torch.zeros_like(decoder_hidden))
+
+            weighted_encoder_rep = self._weighted_encoder_rep(
+                decoder_hidden[0], encoder_outputs
+            )
+
+            rnn_input = torch.cat((embedded, weighted_encoder_rep), dim=2)
+            output, decoder_hidden = self.rnn(rnn_input, (decoder_hidden[0].unsqueeze(0), decoder_hidden[1].unsqueeze(0)))
+        else:
+            raise Exception()
 
         embedded = embedded.squeeze(0)
         output = output.squeeze(0)
@@ -173,7 +201,10 @@ class Decoder(nn.Module):
 
         output = self.out(torch.cat((output, weighted_encoder_rep, embedded), dim=1))
 
-        return output, decoder_hidden.squeeze(0)
+        if self.rnn_type == 'gru':
+            return output, decoder_hidden.squeeze(0)
+        elif self.rnn_type == 'lstm':
+            return output, (decoder_hidden[0].squeeze(0), decoder_hidden[1].squeeze(0))
 
 
 class Seq2Seq(nn.Module):

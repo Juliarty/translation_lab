@@ -1,4 +1,4 @@
-output_path: outputs/seq2seq/
+output_path: outputs/seq2seq_bidirectional/
 tensorboard_logdir: ${output_path}/tensorboard_logdir
 log_dir: ${output_path}
 debug: false
@@ -23,16 +23,16 @@ dataset:
   val_size: 0.15
   test_size: 0.05
 model:
-  enc_emb_dim: 300
-  dec_emb_dim: 300
+  enc_emb_dim: 128
+  dec_emb_dim: 128
   enc_hid_dim: 256
   dec_hid_dim: 256
-  attn_dim: 256
+  attn_dim: 128
   enc_dropout: 0.5
   dec_dropout: 0.5
   pretrained_embedding: fasttext
-  rnn_type: gru
-  bidirectional: false
+  rnn_type: lstm
+  bidirectional: true
 train:
   batch_size: 16
   n_epoch: 40
@@ -40,5 +40,5 @@ train:
   learning_rate: 0.0008
 preprocessing:
   spacy_tokenizer:
-    ru: ru_core_news_lg
-    en: en_core_web_lg
+    ru: ru_core_news_sm
+    en: en_core_web_sm

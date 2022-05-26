@@ -11,3 +11,5 @@ class ModelParams:
     enc_dropout: float
     dec_dropout: float
     pretrained_embedding: str
+    rnn_type: str
+    bidirectional: bool

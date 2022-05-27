@@ -16,7 +16,7 @@ from src.params.main_params import get_main_params, MainParams
 from src.train import evaluate_model
 
 
-config_path = "config_archive/experiment_1"
+config_path = "config_archive/experiment_4"
 
 
 @hydra.main(config_path=config_path, config_name="config.yaml")
@@ -26,10 +26,10 @@ def main(cfg: Union[DictConfig, MainParams]) -> None:
     else:
         main_params = get_main_params(dict(cfg))
 
-    preprocessing_path = "/home/juliarty/Documents/WorkArea/MADE/nlp/translation/outputs/seq2seq_bidirectional/preprocessing.pkl"
-    model_path = "/home/juliarty/Documents/WorkArea/MADE/nlp/translation/outputs/seq2seq_bidirectional/outputs/seq2seq_bidirectional/tmp_model.pt"
+    preprocessing_path = "/home/juliarty/Documents/WorkArea/MADE/nlp/translation/outputs/seq2seq_bidirectional_4/preprocessing.pkl"
+    model_path = "/home/juliarty/Documents/WorkArea/MADE/nlp/translation/outputs/seq2seq_bidirectional_4/model.pt"
 
-    with open(preprocessing_path, 'rb') as f:
+    with open(preprocessing_path, "rb") as f:
         preprocessing = pickle.load(f)
     _, _, test_dl = get_dataloaders(
         main_params.dataset, preprocessing, main_params.train.batch_size
@@ -54,18 +54,16 @@ def measure_inference_speed(cfg: Union[DictConfig, MainParams]) -> float:
     else:
         main_params = get_main_params(dict(cfg))
 
-    preprocessing_path = "/home/juliarty/Documents/WorkArea/MADE/nlp/translation/outputs/seq2seq_2/preprocessing.pkl"
-    model_path = "/home/juliarty/Documents/WorkArea/MADE/nlp/translation/outputs/seq2seq_1/model.pt"
+    preprocessing_path = "/home/juliarty/Documents/WorkArea/MADE/nlp/translation/outputs/seq2seq_bidirectional_4/preprocessing.pkl"
+    model_path = "/home/juliarty/Documents/WorkArea/MADE/nlp/translation/outputs/seq2seq_bidirectional_4/model.pt"
 
     with open(model_path, "rb") as f:
         model = torch.load(f)
 
-    with open(preprocessing_path, 'rb') as f:
+    with open(preprocessing_path, "rb") as f:
         preprocessing = pickle.load(f)
-    _, _, test_dl = get_dataloaders(
-        main_params.dataset, preprocessing, batch_size
-    )
-    device = 'cuda'
+    _, _, test_dl = get_dataloaders(main_params.dataset, preprocessing, batch_size)
+    device = "cuda"
     generated_text = []
     model.eval()
 
@@ -86,8 +84,8 @@ def measure_inference_speed(cfg: Union[DictConfig, MainParams]) -> float:
 
     end_time = time.time()
 
-    print((end_time - start_time) / batches_num)
+    print(batches_num / (end_time - start_time) * batch_size / 32)
 
 
 if __name__ == "__main__":
-    measure_inference_speed()
+    main()

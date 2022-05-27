@@ -24,11 +24,15 @@ def init_weights(m: nn.Module) -> None:
             nn.init.constant_(param.data, 0)
 
 
-language_to_word2vec = {'ru': '../../data/fasttext/cc.ru.300.bin',
-                        'en': '../../data/fasttext/cc.en.300.bin'}
+language_to_word2vec = {
+    "ru": "../../data/fasttext/cc.ru.300.bin",
+    "en": "../../data/fasttext/cc.en.300.bin",
+}
 
 
-def get_fasttext_pretrained_embedding(language, vocab: torchtext.vocab.Vocab, emb_dim: int) -> nn.Module:
+def get_fasttext_pretrained_embedding(
+    language, vocab: torchtext.vocab.Vocab, emb_dim: int
+) -> nn.Module:
     assert emb_dim <= 300
     ft = fasttext.load_model(language_to_word2vec[language])
     if emb_dim < 300:
@@ -45,7 +49,9 @@ def get_fasttext_pretrained_embedding(language, vocab: torchtext.vocab.Vocab, em
                 words_in_vocab += 1
 
         embedding = nn.Embedding.from_pretrained(weights, freeze=False)
-        logger.info(f"Set pretrained embeddings for {words_in_vocab/len(vocab)}% of {language} words.")
+        logger.info(
+            f"Set pretrained embeddings for {words_in_vocab/len(vocab)}% of {language} words."
+        )
 
         with open(emb_file_path, "wb") as f:
             pickle.dump(embedding, f)
@@ -54,6 +60,3 @@ def get_fasttext_pretrained_embedding(language, vocab: torchtext.vocab.Vocab, em
             embedding = pickle.load(f)
 
     return embedding
-
-
-

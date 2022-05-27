@@ -1,0 +1,128 @@
+[2022-05-27 12:21:51,309][src.params.main_params][INFO] - Load config: {'output_path': 'outputs/seq2seq_bidirectional/', 'tensorboard_logdir': 'outputs/seq2seq_bidirectional//tensorboard_logdir', 'log_dir': 'outputs/seq2seq_bidirectional/', 'debug': False, 'dataset': {'dataset_path': '../../data/data.txt', 'dataset_url': 'https://raw.githubusercontent.com/neychev/made_nlp_course/master/datasets/Machine_translation_EN_RU/data.txt', 'source_language': 'ru', 'target_language': 'en', 'source_language_index': 1, 'target_language_index': 0, 'train_dataset_path': '../../data/train_data.txt', 'val_dataset_path': '../../data/val_data.txt', 'test_dataset_path': '../../data/test_data.txt', 'train_size': 0.8, 'val_size': 0.15, 'test_size': 0.05}, 'model': {'enc_emb_dim': 256, 'dec_emb_dim': 256, 'enc_hid_dim': 128, 'dec_hid_dim': 128, 'attn_dim': 128, 'enc_dropout': 0.5, 'dec_dropout': 0.5, 'pretrained_embedding': 'none', 'rnn_type': 'lstm', 'bidirectional': True}, 'train': {'batch_size': 16, 'n_epoch': 40, 'device': 'cuda', 'learning_rate': 0.0008}, 'preprocessing': {'spacy_tokenizer': {'ru': 'ru_core_news_sm', 'en': 'en_core_web_sm'}, 'bert_emb': True}}
+[2022-05-27 12:21:51,311][src.data.dataset][INFO] - Loading dataset
+[2022-05-27 12:21:51,495][src.data.dataset][INFO] - Split data into: (39999, 7499, 2501)
+[2022-05-27 12:21:51,954][src.data.dataset][INFO] - Split dataset.
+[2022-05-27 12:21:58,382][__main__][INFO] - The model has 26,801,625 trainable parameters
+[2022-05-27 12:21:58,383][__main__][INFO] - Start training.
+[2022-05-27 12:31:20,022][src.train][INFO] - Epoch: 01 | Time: 9m 21s
+[2022-05-27 12:31:20,022][src.train][INFO] - 	Train Loss: 5.055 | Train PPL: 156.769
+[2022-05-27 12:31:20,023][src.train][INFO] - 	 Val. Loss: 6.161 |  Val. PPL: 473.852
+[2022-05-27 12:40:36,640][src.train][INFO] - Epoch: 02 | Time: 9m 16s
+[2022-05-27 12:40:36,640][src.train][INFO] - 	Train Loss: 4.431 | Train PPL:  84.023
+[2022-05-27 12:40:36,640][src.train][INFO] - 	 Val. Loss: 6.467 |  Val. PPL: 643.547
+[2022-05-27 12:49:58,879][src.train][INFO] - Epoch: 03 | Time: 9m 22s
+[2022-05-27 12:49:58,879][src.train][INFO] - 	Train Loss: 4.104 | Train PPL:  60.601
+[2022-05-27 12:49:58,879][src.train][INFO] - 	 Val. Loss: 6.133 |  Val. PPL: 460.972
+[2022-05-27 12:59:12,313][src.train][INFO] - Epoch: 04 | Time: 9m 13s
+[2022-05-27 12:59:12,314][src.train][INFO] - 	Train Loss: 3.775 | Train PPL:  43.590
+[2022-05-27 12:59:12,314][src.train][INFO] - 	 Val. Loss: 5.597 |  Val. PPL: 269.627
+[2022-05-27 13:08:24,992][src.train][INFO] - Epoch: 05 | Time: 9m 12s
+[2022-05-27 13:08:24,992][src.train][INFO] - 	Train Loss: 3.480 | Train PPL:  32.467
+[2022-05-27 13:08:24,993][src.train][INFO] - 	 Val. Loss: 5.290 |  Val. PPL: 198.285
+[2022-05-27 13:17:37,274][src.train][INFO] - Epoch: 06 | Time: 9m 12s
+[2022-05-27 13:17:37,274][src.train][INFO] - 	Train Loss: 3.224 | Train PPL:  25.122
+[2022-05-27 13:17:37,274][src.train][INFO] - 	 Val. Loss: 4.688 |  Val. PPL: 108.671
+[2022-05-27 13:26:49,564][src.train][INFO] - Epoch: 07 | Time: 9m 12s
+[2022-05-27 13:26:49,564][src.train][INFO] - 	Train Loss: 2.994 | Train PPL:  19.956
+[2022-05-27 13:26:49,564][src.train][INFO] - 	 Val. Loss: 4.491 |  Val. PPL:  89.225
+[2022-05-27 13:36:01,685][src.train][INFO] - Epoch: 08 | Time: 9m 12s
+[2022-05-27 13:36:01,685][src.train][INFO] - 	Train Loss: 2.806 | Train PPL:  16.540
+[2022-05-27 13:36:01,685][src.train][INFO] - 	 Val. Loss: 4.112 |  Val. PPL:  61.082
+[2022-05-27 13:45:13,572][src.train][INFO] - Epoch: 09 | Time: 9m 11s
+[2022-05-27 13:45:13,572][src.train][INFO] - 	Train Loss: 2.649 | Train PPL:  14.146
+[2022-05-27 13:45:13,572][src.train][INFO] - 	 Val. Loss: 3.710 |  Val. PPL:  40.834
+[2022-05-27 13:54:26,921][src.train][INFO] - Epoch: 10 | Time: 9m 13s
+[2022-05-27 13:54:26,921][src.train][INFO] - 	Train Loss: 2.518 | Train PPL:  12.403
+[2022-05-27 13:54:26,921][src.train][INFO] - 	 Val. Loss: 3.569 |  Val. PPL:  35.490
+[2022-05-27 14:03:39,883][src.train][INFO] - Epoch: 11 | Time: 9m 12s
+[2022-05-27 14:03:39,883][src.train][INFO] - 	Train Loss: 2.388 | Train PPL:  10.895
+[2022-05-27 14:03:39,884][src.train][INFO] - 	 Val. Loss: 3.328 |  Val. PPL:  27.886
+[2022-05-27 14:12:49,982][src.train][INFO] - Epoch: 12 | Time: 9m 10s
+[2022-05-27 14:12:49,983][src.train][INFO] - 	Train Loss: 2.278 | Train PPL:   9.756
+[2022-05-27 14:12:49,983][src.train][INFO] - 	 Val. Loss: 3.328 |  Val. PPL:  27.890
+[2022-05-27 14:22:02,478][src.train][INFO] - Epoch: 13 | Time: 9m 12s
+[2022-05-27 14:22:02,478][src.train][INFO] - 	Train Loss: 2.199 | Train PPL:   9.012
+[2022-05-27 14:22:02,478][src.train][INFO] - 	 Val. Loss: 3.118 |  Val. PPL:  22.604
+[2022-05-27 14:31:15,713][src.train][INFO] - Epoch: 14 | Time: 9m 13s
+[2022-05-27 14:31:15,714][src.train][INFO] - 	Train Loss: 2.105 | Train PPL:   8.208
+[2022-05-27 14:31:15,714][src.train][INFO] - 	 Val. Loss: 2.907 |  Val. PPL:  18.296
+[2022-05-27 14:40:28,006][src.train][INFO] - Epoch: 15 | Time: 9m 12s
+[2022-05-27 14:40:28,006][src.train][INFO] - 	Train Loss: 2.036 | Train PPL:   7.659
+[2022-05-27 14:40:28,006][src.train][INFO] - 	 Val. Loss: 2.894 |  Val. PPL:  18.061
+[2022-05-27 14:49:38,303][src.train][INFO] - Epoch: 16 | Time: 9m 10s
+[2022-05-27 14:49:38,303][src.train][INFO] - 	Train Loss: 1.972 | Train PPL:   7.187
+[2022-05-27 14:49:38,303][src.train][INFO] - 	 Val. Loss: 2.939 |  Val. PPL:  18.890
+[2022-05-27 14:58:51,588][src.train][INFO] - Epoch: 17 | Time: 9m 13s
+[2022-05-27 14:58:51,588][src.train][INFO] - 	Train Loss: 1.915 | Train PPL:   6.787
+[2022-05-27 14:58:51,588][src.train][INFO] - 	 Val. Loss: 2.861 |  Val. PPL:  17.483
+[2022-05-27 15:08:04,455][src.train][INFO] - Epoch: 18 | Time: 9m 12s
+[2022-05-27 15:08:04,455][src.train][INFO] - 	Train Loss: 1.856 | Train PPL:   6.395
+[2022-05-27 15:08:04,455][src.train][INFO] - 	 Val. Loss: 2.715 |  Val. PPL:  15.112
+[2022-05-27 15:17:14,509][src.train][INFO] - Epoch: 19 | Time: 9m 10s
+[2022-05-27 15:17:14,509][src.train][INFO] - 	Train Loss: 1.818 | Train PPL:   6.159
+[2022-05-27 15:17:14,509][src.train][INFO] - 	 Val. Loss: 2.755 |  Val. PPL:  15.727
+[2022-05-27 15:26:27,017][src.train][INFO] - Epoch: 20 | Time: 9m 12s
+[2022-05-27 15:26:27,018][src.train][INFO] - 	Train Loss: 1.767 | Train PPL:   5.851
+[2022-05-27 15:26:27,018][src.train][INFO] - 	 Val. Loss: 2.691 |  Val. PPL:  14.748
+[2022-05-27 15:35:39,620][src.train][INFO] - Epoch: 21 | Time: 9m 12s
+[2022-05-27 15:35:39,620][src.train][INFO] - 	Train Loss: 1.731 | Train PPL:   5.649
+[2022-05-27 15:35:39,621][src.train][INFO] - 	 Val. Loss: 2.691 |  Val. PPL:  14.746
+[2022-05-27 15:44:52,131][src.train][INFO] - Epoch: 22 | Time: 9m 12s
+[2022-05-27 15:44:52,131][src.train][INFO] - 	Train Loss: 1.693 | Train PPL:   5.437
+[2022-05-27 15:44:52,131][src.train][INFO] - 	 Val. Loss: 2.548 |  Val. PPL:  12.786
+[2022-05-27 15:54:02,776][src.train][INFO] - Epoch: 23 | Time: 9m 10s
+[2022-05-27 15:54:02,777][src.train][INFO] - 	Train Loss: 1.680 | Train PPL:   5.367
+[2022-05-27 15:54:02,777][src.train][INFO] - 	 Val. Loss: 2.797 |  Val. PPL:  16.402
+[2022-05-27 16:03:23,558][src.train][INFO] - Epoch: 24 | Time: 9m 20s
+[2022-05-27 16:03:23,558][src.train][INFO] - 	Train Loss: 1.640 | Train PPL:   5.153
+[2022-05-27 16:03:23,559][src.train][INFO] - 	 Val. Loss: 2.483 |  Val. PPL:  11.983
+[2022-05-27 16:12:39,760][src.train][INFO] - Epoch: 25 | Time: 9m 16s
+[2022-05-27 16:12:39,760][src.train][INFO] - 	Train Loss: 1.612 | Train PPL:   5.011
+[2022-05-27 16:12:39,760][src.train][INFO] - 	 Val. Loss: 2.814 |  Val. PPL:  16.681
+[2022-05-27 16:22:01,957][src.train][INFO] - Epoch: 26 | Time: 9m 22s
+[2022-05-27 16:22:01,957][src.train][INFO] - 	Train Loss: 1.572 | Train PPL:   4.815
+[2022-05-27 16:22:01,957][src.train][INFO] - 	 Val. Loss: 2.452 |  Val. PPL:  11.610
+[2022-05-27 16:31:22,060][src.train][INFO] - Epoch: 27 | Time: 9m 20s
+[2022-05-27 16:31:22,061][src.train][INFO] - 	Train Loss: 1.571 | Train PPL:   4.814
+[2022-05-27 16:31:22,061][src.train][INFO] - 	 Val. Loss: 2.420 |  Val. PPL:  11.241
+[2022-05-27 16:41:21,795][src.train][INFO] - Epoch: 28 | Time: 9m 59s
+[2022-05-27 16:41:21,796][src.train][INFO] - 	Train Loss: 1.542 | Train PPL:   4.676
+[2022-05-27 16:41:21,796][src.train][INFO] - 	 Val. Loss: 2.469 |  Val. PPL:  11.812
+[2022-05-27 16:51:34,355][src.train][INFO] - Epoch: 29 | Time: 10m 12s
+[2022-05-27 16:51:34,355][src.train][INFO] - 	Train Loss: 1.516 | Train PPL:   4.553
+[2022-05-27 16:51:34,355][src.train][INFO] - 	 Val. Loss: 2.548 |  Val. PPL:  12.775
+[2022-05-27 17:01:16,841][src.train][INFO] - Epoch: 30 | Time: 9m 42s
+[2022-05-27 17:01:16,841][src.train][INFO] - 	Train Loss: 1.501 | Train PPL:   4.486
+[2022-05-27 17:01:16,841][src.train][INFO] - 	 Val. Loss: 2.380 |  Val. PPL:  10.809
+[2022-05-27 17:11:50,414][src.train][INFO] - Epoch: 31 | Time: 10m 33s
+[2022-05-27 17:11:50,415][src.train][INFO] - 	Train Loss: 1.486 | Train PPL:   4.418
+[2022-05-27 17:11:50,415][src.train][INFO] - 	 Val. Loss: 2.455 |  Val. PPL:  11.651
+[2022-05-27 17:22:32,245][src.train][INFO] - Epoch: 32 | Time: 10m 41s
+[2022-05-27 17:22:32,245][src.train][INFO] - 	Train Loss: 1.486 | Train PPL:   4.421
+[2022-05-27 17:22:32,245][src.train][INFO] - 	 Val. Loss: 2.423 |  Val. PPL:  11.278
+[2022-05-27 17:32:50,386][src.train][INFO] - Epoch: 33 | Time: 10m 18s
+[2022-05-27 17:32:50,386][src.train][INFO] - 	Train Loss: 1.460 | Train PPL:   4.304
+[2022-05-27 17:32:50,386][src.train][INFO] - 	 Val. Loss: 2.407 |  Val. PPL:  11.098
+[2022-05-27 17:43:23,965][src.train][INFO] - Epoch: 34 | Time: 10m 33s
+[2022-05-27 17:43:23,965][src.train][INFO] - 	Train Loss: 1.441 | Train PPL:   4.225
+[2022-05-27 17:43:23,966][src.train][INFO] - 	 Val. Loss: 2.294 |  Val. PPL:   9.914
+[2022-05-27 17:53:40,482][src.train][INFO] - Epoch: 35 | Time: 10m 16s
+[2022-05-27 17:53:40,483][src.train][INFO] - 	Train Loss: 1.428 | Train PPL:   4.169
+[2022-05-27 17:53:40,483][src.train][INFO] - 	 Val. Loss: 2.372 |  Val. PPL:  10.717
+[2022-05-27 18:03:59,826][src.train][INFO] - Epoch: 36 | Time: 10m 19s
+[2022-05-27 18:03:59,826][src.train][INFO] - 	Train Loss: 1.427 | Train PPL:   4.164
+[2022-05-27 18:03:59,826][src.train][INFO] - 	 Val. Loss: 2.405 |  Val. PPL:  11.079
+[2022-05-27 18:13:22,944][src.train][INFO] - Epoch: 37 | Time: 9m 23s
+[2022-05-27 18:13:22,944][src.train][INFO] - 	Train Loss: 1.397 | Train PPL:   4.044
+[2022-05-27 18:13:22,944][src.train][INFO] - 	 Val. Loss: 2.413 |  Val. PPL:  11.163
+[2022-05-27 18:22:45,094][src.train][INFO] - Epoch: 38 | Time: 9m 22s
+[2022-05-27 18:22:45,094][src.train][INFO] - 	Train Loss: 1.384 | Train PPL:   3.990
+[2022-05-27 18:22:45,094][src.train][INFO] - 	 Val. Loss: 2.362 |  Val. PPL:  10.611
+[2022-05-27 18:32:24,496][src.train][INFO] - Epoch: 39 | Time: 9m 39s
+[2022-05-27 18:32:24,496][src.train][INFO] - 	Train Loss: 1.387 | Train PPL:   4.004
+[2022-05-27 18:32:24,496][src.train][INFO] - 	 Val. Loss: 2.259 |  Val. PPL:   9.570
+[2022-05-27 18:41:48,268][src.train][INFO] - Epoch: 40 | Time: 9m 23s
+[2022-05-27 18:41:48,268][src.train][INFO] - 	Train Loss: 1.382 | Train PPL:   3.984
+[2022-05-27 18:41:48,268][src.train][INFO] - 	 Val. Loss: 2.531 |  Val. PPL:  12.565
+[2022-05-27 18:48:30,981][__main__][INFO] - BLEU: 30.340193128790098
+[2022-05-27 18:48:30,982][__main__][INFO] - Saving results

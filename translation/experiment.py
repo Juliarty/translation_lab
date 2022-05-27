@@ -27,12 +27,16 @@ def prepare_seq2seq_model(
     model_params: ModelParams,
     device: torch.device,
 ) -> nn.Module:
-    encoder_input_dim = len(preprocessing.lang2vocabs[dataset_params.source_language])
-    decoder_input_dim = len(preprocessing.lang2vocabs[dataset_params.target_language])
+    encoder_input_dim = preprocessing.VOCAB_SRC_SIZE
+    decoder_input_dim = preprocessing.VOCAB_TRG_SIZE
     encoder_embedding = None
 
-    if model_params.pretrained_embedding == 'fasttext':
-        encoder_embedding = get_fasttext_pretrained_embedding(dataset_params.source_language, preprocessing.lang2vocabs[dataset_params.source_language], model_params.enc_emb_dim)
+    if model_params.pretrained_embedding == "fasttext":
+        encoder_embedding = get_fasttext_pretrained_embedding(
+            dataset_params.source_language,
+            preprocessing.lang2vocabs[dataset_params.source_language],
+            model_params.enc_emb_dim,
+        )
 
     enc = Encoder(
         rnn_type=model_params.rnn_type,
@@ -43,8 +47,7 @@ def prepare_seq2seq_model(
         dec_hid_dim=model_params.dec_hid_dim,
         dropout=model_params.enc_dropout,
         device=device,
-        pretrained_embedding=encoder_embedding
-
+        pretrained_embedding=encoder_embedding,
     )
 
     attn = Attention(
@@ -56,9 +59,12 @@ def prepare_seq2seq_model(
     )
 
     decoder_embedding = None
-    if model_params.pretrained_embedding == 'fasttext':
-        decoder_embedding = get_fasttext_pretrained_embedding(dataset_params.target_language, preprocessing.lang2vocabs[dataset_params.target_language],
-                                                              model_params.dec_emb_dim)
+    if model_params.pretrained_embedding == "fasttext":
+        decoder_embedding = get_fasttext_pretrained_embedding(
+            dataset_params.target_language,
+            preprocessing.lang2vocabs[dataset_params.target_language],
+            model_params.dec_emb_dim,
+        )
     dec = Decoder(
         model_params.rnn_type,
         model_params.bidirectional,
@@ -69,7 +75,7 @@ def prepare_seq2seq_model(
         model_params.dec_dropout,
         attn,
         device,
-        pretrained_embedding=decoder_embedding
+        pretrained_embedding=decoder_embedding,
     )
 
     model = Seq2Seq(enc, dec, device).to(device)
@@ -92,11 +98,13 @@ def start_training_pipeline(cfg: Union[DictConfig, MainParams]) -> None:
 
     preprocessing_path = "preprocessing.pkl"
     if not os.path.exists(preprocessing_path):
-        with open(preprocessing_path, 'wb') as f:
-            preprocessing = get_preprocessing(main_params.dataset, main_params.preprocessing)
+        with open(preprocessing_path, "wb") as f:
+            preprocessing = get_preprocessing(
+                main_params.dataset, main_params.preprocessing
+            )
             pickle.dump(preprocessing, f)
     else:
-        with open("preprocessing.pkl", 'rb') as f:
+        with open("preprocessing.pkl", "rb") as f:
             preprocessing = pickle.load(f)
 
     train_dl, val_dl, test_dl = get_dataloaders(
@@ -108,11 +116,7 @@ def start_training_pipeline(cfg: Union[DictConfig, MainParams]) -> None:
     )
     logger.info(f"The model has {count_parameters(model):,} trainable parameters")
     optimizer = optim.Adam(model.parameters(), lr=main_params.train.learning_rate)
-    criterion = nn.CrossEntropyLoss(
-        ignore_index=preprocessing.lang2vocabs[main_params.dataset.target_language][
-            preprocessing.PADDING_TOKEN
-        ]
-    )
+    criterion = nn.CrossEntropyLoss(ignore_index=preprocessing.PADDING_TRG_TOKEN_ID)
 
     logger.info("Start training.")
     writer = SummaryWriter(main_params.tensorboard_logdir)

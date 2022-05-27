@@ -1,11 +1,11 @@
 enc_emb_dim: 256
 dec_emb_dim: 256
-enc_hid_dim: 256
+enc_hid_dim: 128
 dec_hid_dim: 128
 attn_dim: 128
-enc_dropout: 0.3
-dec_dropout: 0.7
+enc_dropout: 0.5
+dec_dropout: 0.5
 
-pretrained_embedding: 'fasttext'
+pretrained_embedding: 'none'
 rnn_type: lstm
 bidirectional: true

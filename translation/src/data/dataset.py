@@ -13,7 +13,7 @@ from torch.utils.data import Dataset, SequentialSampler
 from torch.utils.data import DataLoader, random_split
 from torch.nn.utils.rnn import pad_sequence
 
-from src.data.preprocessing import Preprocessing
+from src.data.preprocessing import Preprocessing, BertEmbPreprocessing
 from src.params.dataset_params import DatasetParams
 from src.params.preprocessing_params import PreprocessingParams
 
@@ -78,11 +78,18 @@ def get_preprocessing(
 ):
     train_ds = TranslationDataset(dataset_path=dataset_params.train_dataset_path)
 
-    return Preprocessing(
-        data_iter=DataLoader(train_ds, collate_fn=lambda x: x),
-        dataset_params=dataset_params,
-        preprocessing_params=preprocessing_params,
-    )
+    if preprocessing_params.bert_emb:
+        return BertEmbPreprocessing(
+            data_iter=DataLoader(train_ds, collate_fn=lambda x: x),
+            dataset_params=dataset_params,
+            preprocessing_params=preprocessing_params,
+        )
+    else:
+        return Preprocessing(
+            data_iter=DataLoader(train_ds, collate_fn=lambda x: x),
+            dataset_params=dataset_params,
+            preprocessing_params=preprocessing_params,
+        )
 
 
 def get_dataloaders(
@@ -102,20 +109,14 @@ def get_dataloaders(
     def collate_fn(data_batch):
         source_batch, target_batch = [], []
         for (src_item, tgt_item) in data_batch:
-            source_batch.append(src_item)
-            target_batch.append(tgt_item)
+            source_batch.append(src_item.squeeze(0))
+            target_batch.append(tgt_item.squeeze(0))
 
         source_batch = pad_sequence(
-            source_batch,
-            padding_value=preprocessing.lang2vocabs[dataset_params.source_language][
-                preprocessing.PADDING_TOKEN
-            ],
+            source_batch, padding_value=preprocessing.PADDING_SRC_TOKEN_ID
         )
         target_batch = pad_sequence(
-            target_batch,
-            padding_value=preprocessing.lang2vocabs[dataset_params.target_language][
-                preprocessing.PADDING_TOKEN
-            ],
+            target_batch, padding_value=preprocessing.PADDING_TRG_TOKEN_ID
         )
         return source_batch, target_batch
 

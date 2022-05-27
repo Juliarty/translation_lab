@@ -166,7 +166,7 @@ def evaluate_blue(
     device: torch.device,
     summary_writer: SummaryWriter,
     debug: bool,
-    log_translation_count: int = 100
+    log_translation_count: int = 100,
 ) -> float:
     original_text = []
     generated_text = []
